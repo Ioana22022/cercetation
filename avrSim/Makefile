@@ -1,9 +1,14 @@
-PORT=/dev/ttyUSB0
+PORT_M=/dev/ttyUSB0
+PORT_W=/dev/ttyUSB0
 
 all: snif.hex
 
-upload: snif.hex
-	avrdude -D -p m2560 -c stk500v2 -P /dev/ttyUSB0 -b 115200 -F  -U flash:w:$<:a
+uploadWifi: snif.hex
+	avrdude -D -p atmega328p -c arduino -P ${PORT_W} -b 115200 -F  -U flash:w:$<:a
+
+
+uploadMega: snif.hex
+	avrdude -D -p m2560 -c stk500v2 -P ${PORT_M} -b 115200 -F  -U flash:w:$<:a
 
 snif.hex: snif.elf
 

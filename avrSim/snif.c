@@ -17,7 +17,7 @@ void USART0_init()
 void USART0_transmit(char data)
 {
 	// wait for buffer to empty up
-	while(!(UCSR0A) & (1 << UDRE0));
+	while(!(UCSR0A & (1 << UDRE0)));
 
 	UDR0 = data;
 }
@@ -40,10 +40,12 @@ void USART0_print(const char *data)
 
 int main()
 {
+	USART0_init();
 	while(1)
 	{
-		PORTB ^= (1 << PB7);
-		_delay_ms(1000);
+		//PORTB ^= (1 << PB7);
+		USART0_print("feyyyyyyyyyyy\n");
+		_delay_ms(10);
 	}
 
 	return 0;
