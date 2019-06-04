@@ -3,21 +3,24 @@
 
 #define BUFSZ (int)(sizeof(int)/sizeof(char))
 #define MASK_ID 0xFC
-#define START "ABC"
+#define DEBUG 1
 
+char start_seq[] = "ABCD";
 char pkg[100];
 int filter(char c){
-	int slaveID_rule = 0;
-	/*int i;
-	char start_seq[5];
-	// received 4 bytes;
-	for (i = 0; i < 4; i++) 
+	int slaveID_rule = 0, fctId = 0, count = 0;
+
+#ifndef DEBUG
+	pkg[count++] = c;
+
+	// received 4 bytes, and check the correctness of the first 3.5 bytes
+	if(count == 4)
 	{
-		pkg[i] = c;
-		start_seq[i] = c;
-	}i
-	if(strcmp(START, start_seq)) return false;
-	pkg[4] = c;*/
+		
+		if((pkg[0] != start_seq[0]) || (pkg[1] != start_seq[1]) || (pkg[2] != start_seq[2]) || (pkg[3] & 0xFC) != (start_seq[3] & 0xFC)) return 0;
+	}
+#endif
+
 	if((c & MASK_ID) != ('a' & MASK_ID)) return 0;
 	return 1;
 	
