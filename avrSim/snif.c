@@ -1,14 +1,15 @@
 #include <avr/io.h>
 #include <util/delay.h>
+#include <avr/interrupt.h>
 
 #define BUFSZ (int)(sizeof(int)/sizeof(char))
 #define MASK_ID 0xFC
 #define DEBUG 1
 
-char start_seq[] = "ABCD";
-char pkg[100];
+#if 0
 int filter(char c){
-	int slaveID_rule = 0, fctId = 0, count = 0;
+	int slaveID_rule = 0, fctId = 0;
+	static int count = 0;
 
 #ifndef DEBUG
 	pkg[count++] = c;
@@ -25,6 +26,15 @@ int filter(char c){
 	return 1;
 	
 }
+#endif
+
+
+volatile char state = '0';
+ISR(TIMER1_COMPA_vect)
+{
+	state = '0';
+}
+
 void USART0_init()
 {
 	// baud 38400
@@ -66,6 +76,15 @@ char USART1_receive()
 	return UDR1;
 }
 
+
+void USART1_print(const char *data)
+{
+	while(*data != '\0')
+	{
+		USART1_transmit(*data++);
+	}
+}
+
 void USART0_transmit(char data)
 {
 	// wait for buffer to empty up
@@ -89,6 +108,16 @@ void USART0_print(const char *data)
 	}
 }
 
+void timer1_init()
+{
+	// set timer to count for a frequency of 1372 Hz equivalent of 38400 baud
+	// rate
+	OCR1A = 0x2D8E;
+	TCCR1B |= (1 << CS10);
+
+	// activtate interrupt at OCR1A_Compare
+	TIMSK1 |= (1 << OCIE1A);
+}
 
 int main()
 {
@@ -96,13 +125,48 @@ int main()
 	USART1_init();
 
 	char c;
-	int pass = 1;
+	char slaveID, fID;
+
 	while(1)
 	{
+		// byte receive
 		c = USART0_receive();
+
+		// reset timer
+		TCNT1 = 0;
 	
-		pass = filter(c);
-		if(pass) USART1_transmit(c);
+
+		// enable interrupts
+		sei();
+		// start timer
+		timer1_init();
+
+		switch(state)
+		{
+			// init state
+			case '0':
+				
+				slaveID = c;
+				USART1_print("slaveId: ");
+				USART1_transmit(slaveID);
+				state++;
+				
+				break;
+
+			case '1':
+				fID = c;
+				USART1_print("functionID: ");
+				USART1_transmit(fID);
+				state++;
+				
+				break;
+
+			case '2':
+
+				USART1_transmit(c);
+				break;
+		}
+
 		_delay_ms(10);
 	}
 
