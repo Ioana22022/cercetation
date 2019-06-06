@@ -5,6 +5,7 @@
 #define BUFSZ (int)(sizeof(int)/sizeof(char))
 #define MASK_ID 0xFC
 #define DEBUG 1
+#define SLAVESZ 3
 
 
 volatile char state;
@@ -117,6 +118,8 @@ int main()
 
 	char c;
 	char slaveID, fID;
+	char accepted_slaves[] = {1, 2, 3};
+	int i;	
 
 	DDRB = (1 << PB7);
 
@@ -146,10 +149,25 @@ int main()
 			case 0:
 				
 				slaveID = c;
-				USART0_transmit(slaveID);
-				state++;	
+				for(i = 0; i < SLAVESZ; i++)
+				{
+					if(accepted_slaves[i] == slaveID)
+					{
+						USART0_transmit(slaveID);
+						state++;
+						break;
+					}
+					
+				}
 
+				if(i == SLAVESZ)
+				{
+					state = 3;	
+					USART0_transmit(~c);		
+					break;
+				}
 				break;
+
 
 			case 1:
 				fID = c;
@@ -161,6 +179,14 @@ int main()
 			case 2:
 				USART0_transmit(c);
 
+				break;
+
+			case 3:
+				// flip the byte to break it and break the crc
+				//slaveID ^= slaveID;
+
+				// send it broken
+				USART0_transmit(~c);
 				break;
 				
 			default:
