@@ -24,7 +24,7 @@ void USART0_init()
 	// baud 38400
 	UBRR0 = 25;
 
-	// start transmitter
+	// start transmitter and enable RX interrupt
 	UCSR0B = (1 << TXEN0) | (1 << RXEN0);
 
 	// set frame format: 8 data b, 1 stop, no parity
@@ -131,7 +131,7 @@ int main()
 	while(1)
 	{
 		// byte receive
-		c = USART0_receive();
+		c = USART1_receive();
 
 		timer1_stop();
 
@@ -146,20 +146,20 @@ int main()
 			case 0:
 				
 				slaveID = c;
-				USART1_transmit(slaveID);
+				USART0_transmit(slaveID);
 				state++;	
 
 				break;
 
 			case 1:
 				fID = c;
-				USART1_transmit(fID);
+				USART0_transmit(fID);
 				state++;
 				
 				break;
 
 			case 2:
-				USART1_transmit(c);
+				USART0_transmit(c);
 
 				break;
 				
