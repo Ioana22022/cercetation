@@ -11,6 +11,14 @@
 volatile char state;
 
 void timer1_stop();
+
+typedef struct pkg
+{
+	int id;
+	int accepted_fct[8];
+	int length;
+}pkg;
+
 ISR(TIMER1_COMPA_vect)
 {
 	state = 0;
@@ -117,9 +125,16 @@ int main()
 	USART1_init();
 
 	char c;
-	char slaveID, fID;
-	char accepted_slaves[] = {1, 2, 3};
-	int i;	
+	char slaveID, fID, saved_slave;
+	pkg filter[3] = {
+		{1, {1, 2, 3, 4, 5, 6, 15, 16}, 8},
+		{2, {1, 2, 3, 4, 5, 6, 16}, 7}, // slave 2 cannot force multiple coils
+		{3, {1, 2, 3, 4, 5, 6, 15, 16}, 8}
+	};
+
+	
+
+	int i, j;
 
 	DDRB = (1 << PB7);
 
@@ -151,9 +166,10 @@ int main()
 				slaveID = c;
 				for(i = 0; i < SLAVESZ; i++)
 				{
-					if(accepted_slaves[i] == slaveID)
+					if(filter[i].id == slaveID)
 					{
 						USART0_transmit(slaveID);
+						saved_slave = slaveID;
 						state++;
 						break;
 					}
@@ -171,11 +187,28 @@ int main()
 
 			case 1:
 				fID = c;
-				USART0_transmit(fID);
-				state++;
-				
+				//USART0_transmit(fID);
+				//state++;
+				//break;
+		
+				for(i = 0; i < filter[saved_slave - 1].length; i++)
+				{
+					if(filter[saved_slave - 1].accepted_fct[i] == fID)
+					{
+						USART0_transmit(fID);
+						state++;
+						break;
+					}
+				}
+				if(i == SLAVESZ)
+				{
+					state = 3;	
+					USART0_transmit(~c);		
+					break;
+				}
 				break;
 
+				
 			case 2:
 				USART0_transmit(c);
 
@@ -183,7 +216,6 @@ int main()
 
 			case 3:
 				// flip the byte to break it and break the crc
-				//slaveID ^= slaveID;
 
 				// send it broken
 				USART0_transmit(~c);
