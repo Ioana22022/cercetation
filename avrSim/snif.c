@@ -103,7 +103,7 @@ void timer1_init()
 {
 	// set timer to count for a frequency of 1000 Hz equivalent of 38400 baud
 	// rate
-	OCR1A = 65000;
+	OCR1A = 8333;
 
 	// activtate interrupt at OCR1A_Compare
 	TIMSK1 |= (1 << OCIE1A);
@@ -128,7 +128,7 @@ int main()
 	char slaveID, fID, saved_slave;
 	pkg filter[3] = {
 		{1, {1, 2, 3, 4, 5, 6, 15, 16}, 8},
-		{2, {1, 2, 3, 4, 5, 6, 16}, 7}, // slave 2 cannot force multiple coils
+		{2, {1, 2, 4, 5, 6, 16}, 7}, // slave 2 cannot force multiple coils
 		{3, {1, 2, 3, 4, 5, 6, 15, 16}, 8}
 	};
 
