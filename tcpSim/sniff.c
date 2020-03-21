@@ -8,6 +8,7 @@ struct sockaddr_in source,dest;
 int sock_raw;
 
 void processPacket(unsigned char *buf, int len);
+void printData(unsigned char *data, int len);
 
 int main()
 {
@@ -33,13 +34,26 @@ int main()
 void processPacket(unsigned char *buf, int len)
 {
 	struct iphdr *iph = (struct iphdr*)buf;
+	memset(&source, 0, sizeof(source))
+	source.sin_addr.s_addr = iph->saddr;
+	
+	memset(&dest, 0, sizeof(dest))
+	dest.sin_addr.s_addr = iph->daddr;
+
 	if(iph->protocol == 6) //then packet is TCP
 	{
 		unsigned short iphdrlen;
 		iphdrlen = iph->ihl*4;
 		
 		struct tcphdr *tcph = (struct tcphdr*)(buf + iphdrlen);
-
+		printf("Source Port: %u\n", ntohs(tcph->source));
+		printf("Destination Port: %u\n", ntohs(tcph->dest));
+		printf("Source IP:%s\n", inet_ntoa(source.sin_addr));
+		printf("Destination IP:%s\n", inet_ntoa(dest.sin_addr));
 	}
 }
 
+void printData(unsigned char *data, int len)
+{
+	
+}
