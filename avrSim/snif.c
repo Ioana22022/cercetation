@@ -1,16 +1,14 @@
-#include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
 #include "filter.h"
 #include "usart.h"
+#include "timer1.h"
 
 #define BUFSZ (int)(sizeof(int)/sizeof(char))
 #define SLAVESZ 3
 
 
 volatile char state;
-
-void timer1_stop();
 
 ISR(TIMER1_COMPA_vect)
 {
@@ -19,26 +17,6 @@ ISR(TIMER1_COMPA_vect)
 	timer1_stop();
 
 	PORTB ^= (1 << PB7);
-}
-
-void timer1_init()
-{
-	// set timer to count for a frequency of 1000 Hz equivalent of 38400 baud
-	// rate
-	OCR1A = 8333;
-
-	// activtate interrupt at OCR1A_Compare
-	TIMSK1 |= (1 << OCIE1A);
-}
-
-void timer1_start()
-{
-	TCCR1B = (1 << CS10);
-}
-
-void timer1_stop()
-{
-	TCCR1B = 0;
 }
 
 int main()

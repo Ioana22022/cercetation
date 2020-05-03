@@ -18,7 +18,7 @@ snif.hex: snif.elf
 
 
 
-snif.elf: snif.c filter.c usart.c
+snif.elf: snif.c filter.c usart.c timer1.c
 
 	avr-gcc -mmcu=atmega2560 -DF_CPU=16000000 -Os -Wall -o $@ $^
 
