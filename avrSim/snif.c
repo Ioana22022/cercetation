@@ -9,7 +9,6 @@
 
 
 volatile char state;
-char saved_slave;
 
 int searchID(int slaveID)
 {
@@ -120,6 +119,7 @@ int main()
 					break;
 				}
 
+				// if reached, slaveid is allowed to perform action
 				USART0_transmit(c);
 				state++;
 				break;
