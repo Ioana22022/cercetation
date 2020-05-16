@@ -1,46 +1,10 @@
 #include <util/delay.h>
 #include <avr/interrupt.h>
-#include "filter.h"
 #include "usart.h"
 #include "timer1.h"
-
-#define BUFSZ (int)(sizeof(int)/sizeof(char))
-#define SLAVESZ 3
-
+#include "search.h"
 
 volatile char state;
-
-int searchID(int slaveID)
-{
-	int i;
-
-	for(i = 0; i < SLAVESZ; i++)
-	{
-		if(filter[i].id == slaveID)
-		{
-
-			return 1;
-		}
-					
-	}
-
-	return -1;
-}
-
-int searchFunction(int slaveID, int fID)
-{
-	int i;
-
-	for(i = 0; i < filter[slaveID - 1].length; i++)
-	{
-		if(filter[slaveID - 1].accepted_fct[i] == fID)
-		{
-			return 1;
-		}
-	}
-
-	return -1;
-}
 
 ISR(TIMER1_COMPA_vect)
 {
@@ -57,11 +21,11 @@ int main()
 	USART1_init();
 
 	char c;
-	char slaveID, fID, saved_slave;
+	char slaveID, fID;
 
 	
 
-	int i, rc;
+	int rc;
 
 	DDRB = (1 << PB7);
 
