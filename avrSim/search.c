@@ -1,12 +1,42 @@
 #include "search.h"
 #include "filter.h"
 #include "has.h"
-#define NORMAL_SEARCH 0
-#define HAS_SEARCH 1
 
 int slaves = sizeof(filter)/sizeof(struct pkg);
 
+
+// search slave ID function
 int searchID(int slaveID)
+{
+#if NORMAL_SEARCH
+	return searchNormalID(slaveID);
+
+#elif HAS_SEARCH
+	return searchHasID(slaveID);
+
+#endif
+
+	// if reached, then no search algorithm selected, returns -1
+	return -1;
+}
+
+// search function code function
+int searchFunction(int slaveID, int fID)
+{
+
+#if NORMAL_SEARCH
+	return searchNormalFunction(slaveID, fID);
+
+#elif HAS_SEARCH
+	return searchHasFunction(slaveID, fID);
+#endif
+
+	// if reached, means no search algorithm selected, returns -1
+	return -1;
+}
+
+#if NORMAL_SEARCH
+int searchNormalID(int slaveID)
 {
 	int i;
 
@@ -23,7 +53,6 @@ int searchID(int slaveID)
 	return -1;
 }
 
-#if NORMAL_SEARCH
 int searchNormalFunction(int slaveID, int fID)
 {
 	int i;
@@ -42,11 +71,18 @@ int searchNormalFunction(int slaveID, int fID)
 #endif
 
 #if HAS_SEARCH
+int searchHasID(int slaveID)
+{
+	if(hID[slaveID] == 1)
+	{
+		return 1;
+	}
+
+	return -1;
+}
+
 int searchHasFunction(int slaveID, int fID)
 {
-	// populate h[][]
-	insertH();
-
 	// check validity of function
 	if(h[slaveID][fID] == 1)
 	{
@@ -57,16 +93,3 @@ int searchHasFunction(int slaveID, int fID)
 }
 #endif
 
-int searchFunction(int slaveID, int fID)
-{
-
-#if NORMAL_SEARCH
-	return searchNormalFunction(slaveID, fID);
-
-#elif HAS_SEARCH
-	return searchHasFunction(slaveID, fID);
-#endif
-
-	// if reached, means no search algorithm selected, returns -1
-	return -1;
-}

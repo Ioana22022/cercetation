@@ -36,6 +36,10 @@ int main()
 
 	sei();
 
+#if HAS_SEARCH
+	insertH();
+	insertHId();
+#endif
 
 	while(1)
 	{

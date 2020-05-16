@@ -3,6 +3,12 @@
 
 extern int h[255][8];
 
-void instertH(int, int);
+extern int hID[255];
+
+// populate h[if][fCode]
+void instertH();
+
+// populate hID[id]
+void insertHId();
 
 #endif
