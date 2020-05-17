@@ -1,5 +1,15 @@
 #include "filter.h"
 
+/*
+ *
+ * {SLAVE or SLAVES,
+    {ALLOWED COMMAND 1, ADDRESS or ADDRESS INTERVAL, VALUE INTERVAL},
+    {ALLOWED COMMAND 2, ADDRESS or ADDRESS INTERVAL, VALUE INTERVAL},
+    {ALLOWED COMMAND 3, ADDRESS or ADDRESS INTERVAL, VALUE INTERVAL},
+	}
+*/
+
+
 // possible function codes:
 //
 // 1, 2, 3, 4, 5, 6, 15, 16
