@@ -48,6 +48,18 @@ struct adu filter[] =
 
 };
 
+int chr_simple(char c, char str_c[])
+{
+	int val = (int) c;
+	if(val == atoi(str_c))
+	{
+		printf("pass!\n");
+		return 1;
+	}
+	printf("denied!\n");
+	return 0;
+}
+
 int chr_interval(char c, char str_c[])
 {
 	int lower_bound, upper_bound;
@@ -128,6 +140,7 @@ int main(int argc, char **argv)
 		if(is_simple)
 		{
 			printf("simple\n");
+			chr_simple(c, filter[i].slaves);
 			is_simple = 0;
 		}
 	}
