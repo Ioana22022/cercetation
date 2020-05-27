@@ -31,7 +31,7 @@ struct pdu
 
 struct adu
 {
-	char slaves[5];
+	char slaves[10];
 	struct pdu vpdu;
 };
 
@@ -44,6 +44,10 @@ struct adu filter[] =
 	{
 		"12",
 		{0x10, "40001", "254"}
+	},
+	{
+		"9,10,11",
+		{0x10, "40001", "254"}
 	}
 
 };
@@ -53,11 +57,9 @@ int chr_simple(char c, char str_c[])
 	int val = (int) c;
 	if(val == atoi(str_c))
 	{
-		printf("pass!\n");
 		return 1;
 	}
-	printf("denied!\n");
-	return 0;
+	return -1;
 }
 
 int chr_interval(char c, char str_c[])
@@ -67,11 +69,44 @@ int chr_interval(char c, char str_c[])
 	int val = (int) c;
 	if(val >= lower_bound && val <= upper_bound)
 	{
-		printf("pass!\n");
 		return 1;
 	}
-	printf("denied!\n");
-	return 0;
+
+	return -1;
+}
+
+int chr_list(char c, char str_c[])
+{
+
+
+	int numbers[10];
+	int i = 0;
+	char *curr;
+	while((curr = strtok(i ? NULL : str_c, ",")) != NULL)
+	{
+		numbers[i++] = atoi(curr);
+	}
+
+	int j = 0;
+	int val = (int) c;
+	//printf("VAL in list is: %d\n", val);
+	//printf("EXTRACTED numbers from LIST: \n");
+	for(j = 0; j < i; j++)
+	{
+		//printf("(index, value):(%d,%d)", j, numbers[j]);
+		
+		/*if(numbers[i] == val)
+		{
+			return 1;
+		}*/
+		if(numbers[j] == val)
+		{
+			return 1;
+		}
+
+	}
+
+	return -1;
 }
 
 int alldigit(char a[], int n)
@@ -87,64 +122,64 @@ int alldigit(char a[], int n)
 	return 1;
 }
 
+int search(char c, int num_slaves /*, char str_search[]*/)
+{
+	// check if received character is in any of the filter category
+	for (int i = 0; i < num_slaves; i++)
+	{
+	//	printf("%s", filter[i].slaves);
+	
+		if(strchr(filter[i].slaves, '-'))
+		{
+			if(chr_interval(c, filter[i].slaves) == 1)
+			{
+				return 1;
+			}
+		}
+
+		else if(strchr(filter[i].slaves, ','))
+		{
+			//is_list = 1;
+			if(chr_list(c, filter[i].slaves) == 1)
+			{
+				return 1;
+			}
+		}
+
+		else if(alldigit(filter[i].slaves, strlen(filter[i].slaves)) > 0)
+		{
+			if(chr_simple(c, filter[i].slaves) == 1)
+			{
+				return 1;
+			}
+		}
+
+	}
+	return -1;
+}
+
 int main(int argc, char **argv)
 
 {
-	//char a[] = "40001-40005";
-	//char *p = &a[0];
-	//int lower_bound, higher_bound;
-	//sscanf(a, "%d-%d", &lower_bound, &higher_bound);
-	//printf("(Lower bound, Upper bound): (%d, %d)", lower_bound, higher_bound);
-
 	char allowed_slaves[5];
 	int num_slaves = sizeof(filter)/sizeof(filter[0]);
 	for (int i = 0; i < num_slaves; i++)
 	{
 		printf("%s\n", filter[i].slaves);
 	}
-	int is_interval = 0, is_simple = 0, is_list = 0;
 
 	printf("num_slaves = %d\n", num_slaves);	
 
 	char c = 9;
 	c = atoi(argv[1]);
-	for (int i = 0; i < num_slaves; i++)
+	if(search(c, num_slaves) > 0)
 	{
-	//	printf("%s", filter[i].slaves);
-		if(strchr(filter[i].slaves, '-'))
-		{
-			is_interval = 1;
-			chr_interval(c, filter[i].slaves);
-			
-		}
-		else if(strchr(filter[i].slaves, ','))
-		{
-			is_list = 1;
-		}
-		else if(alldigit(filter[i].slaves, strlen(filter[i].slaves)) > 0)
-		{
-			is_simple = 1; 
-		}
-		
-		if(is_interval)
-		{
-			printf("interval\n");
-			is_interval = 0;
-		}
-
-		if(is_list)
-		{
-			printf("list\n");
-			is_list = 0;
-		}
-		if(is_simple)
-		{
-			printf("simple\n");
-			chr_simple(c, filter[i].slaves);
-			is_simple = 0;
-		}
+		printf("passed!\n");
 	}
-
+	else 
+	{	
+		printf("denied!\n");
+	}
 
 	return 0;
 }
