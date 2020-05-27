@@ -4,6 +4,56 @@
 
 int slaves = sizeof(filter)/sizeof(struct pkg);
 
+int chr_simple(char c, char str_c[])
+{
+	int val = (int) c;
+	if(val == atoi(str_c))
+	{
+		return 1;
+	}
+	return -1;
+}
+
+int chr_interval(char c, char str_c[])
+{
+	int lower_bound, upper_bound;
+	sscanf(str_c, "%d-%d", &lower_bound, &upper_bound);
+	int val = (int) c;
+	if(val >= lower_bound && val <= upper_bound)
+	{
+		return 1;
+	}
+
+	return -1;
+}
+
+int chr_list(char c, char str_c[])
+{
+
+
+	int numbers[10];
+	int i = 0;
+	char *curr;
+	while((curr = strtok(i ? NULL : str_c, ",")) != NULL)
+	{
+		numbers[i++] = atoi(curr);
+	}
+
+	int j = 0;
+	int val = (int) c;
+
+	for(j = 0; j < i; j++)
+	{
+		if(numbers[j] == val)
+		{
+			return 1;
+		}
+
+	}
+
+	return -1;
+}
+
 
 // search slave ID function
 int searchID(int slaveID)

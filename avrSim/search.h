@@ -3,6 +3,12 @@
 #define NORMAL_SEARCH 0
 #define HAS_SEARCH 1
 
+/*helpers that actually call the search*/
+
+int chr_simple(char c, char str_c[]);
+int chr_interval(char c, char str_c[]);
+int chr_list(char c, char str_c[]);
+
 int searchID(int);
 int searchFunction(int, int);
 
