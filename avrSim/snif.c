@@ -1,12 +1,8 @@
 #include <util/delay.h>
 #include <avr/interrupt.h>
-#include "filter.h"
 #include "usart.h"
 #include "timer1.h"
-
-#define BUFSZ (int)(sizeof(int)/sizeof(char))
-#define SLAVESZ 3
-
+#include "search.h"
 
 volatile char state;
 
@@ -25,11 +21,11 @@ int main()
 	USART1_init();
 
 	char c;
-	char slaveID, fID, saved_slave;
+	char slaveID, fID;
 
 	
 
-	int i;
+	int rc;
 
 	DDRB = (1 << PB7);
 
@@ -40,6 +36,10 @@ int main()
 
 	sei();
 
+#if HAS_SEARCH
+	insertH();
+	insertHId();
+#endif
 
 	while(1)
 	{
@@ -59,45 +59,37 @@ int main()
 			case 0:
 				
 				slaveID = c;
-				for(i = 0; i < SLAVESZ; i++)
-				{
-					if(filter[i].id == slaveID)
-					{
-						USART0_transmit(slaveID);
-						saved_slave = slaveID;
-						state++;
-						break;
-					}
-					
-				}
+				rc = searchID(slaveID);
 
-				if(i == SLAVESZ)
+				if(rc < 0)
 				{
-					state = 3;	
-					USART0_transmit(~c);		
+					state = 3;
+					USART0_transmit(~c);
 					break;
 				}
+
+				// if reached, slaveID found
+				USART0_transmit(slaveID);
+				state++;
+	
 				break;
 
 
 			case 1:
 				fID = c;
 		
-				for(i = 0; i < filter[saved_slave - 1].length; i++)
-				{
-					if(filter[saved_slave - 1].accepted_fct[i] == fID)
-					{
-						USART0_transmit(fID);
-						state++;
-						break;
-					}
-				}
-				if(i == SLAVESZ)
-				{
+				rc = searchFunction(slaveID, fID);
+
+				if(rc < 0)
+				{	
 					state = 3;	
 					USART0_transmit(~c);		
 					break;
 				}
+
+				// if reached, slaveid is allowed to perform action
+				USART0_transmit(c);
+				state++;
 				break;
 
 				
@@ -111,9 +103,12 @@ int main()
 
 				// send it broken
 				USART0_transmit(~c);
+
+				// send it broken untill timer expires
 				break;
 				
 			default:
+				// cannot reach, wait for timer to expire
 				;
 				break;
 		}
