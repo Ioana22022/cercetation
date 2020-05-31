@@ -5,8 +5,8 @@ typedef struct pkg
 {
 	int id;
 	int accepted_fct[8];
-	int number_of_rd;
-	int number_or_wrt;
+	int accepted_addr[8];
+
 } pkg;
 
 #endif

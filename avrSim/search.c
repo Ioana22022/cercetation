@@ -1,6 +1,8 @@
 #include "search.h"
 #include "filter.h"
 #include "has.h"
+#include <string.h>
+#include <stdlib.h> 
 
 int slaves = sizeof(filter)/sizeof(struct pkg);
 

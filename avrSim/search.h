@@ -1,7 +1,7 @@
 #ifndef _SEARCH_H_
 #define _SEARCH_H_
-#define NORMAL_SEARCH 0
-#define HAS_SEARCH 1
+#define NORMAL_SEARCH 1
+#define HAS_SEARCH 0
 
 /*helpers that actually call the search*/
 
