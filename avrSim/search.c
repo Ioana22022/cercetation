@@ -108,7 +108,7 @@ int searchNormalID(int slaveID)
 int searchNormalFunction(int slaveID, int fID)
 {
 	int i;
-	int fCodes = sizeof(filter[slaveID - 1]) / sizeof(int);
+	int fCodes = filter[slaveID - 1].accepted_fct_length;
 
 	for(i = 0; i < fCodes; i++)
 	{

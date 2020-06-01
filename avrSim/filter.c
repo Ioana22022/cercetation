@@ -14,8 +14,8 @@
 //
 // 1, 2, 3, 4, 5, 6, 15, 16
 pkg filter[4] = {
-		{1, {1, 2, 3, 16}, {40001, 40002, 40003}}, // slave 1 is allowed to do wtv he wants, no more than 3 read operations, no more than 3 write operations
-		{2, {1, 2, 3, 16}, {40002}}, // slave 2 cannot write multiple coils
-		{3, {1, 2, 3, 16}, {40005}}, // slave 3 can do anything he wants
-		{4, {0x9c}, {40004}} // slave 4 cannot write multiple holding registers
+		{1, 4, {1, 2, 3, 4, 16}, 1, {40001, 40002, 40003}}, 
+		{2, 4, {1, 2, 3, 4, 16}, 1, {40002}},
+		{3, 4, {1, 2, 3, 16}, 1, {40005}},
+		{4, 1, {0x01}, 1, {40004}}
 };
