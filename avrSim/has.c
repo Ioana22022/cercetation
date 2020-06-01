@@ -12,7 +12,7 @@ void insertH()
 
 	for (i = 0; i < 4; i++)
 	{
-		fCodes = sizeof(filter[i].accepted_fct) / sizeof(int);
+		fCodes = filter[i].accepted_fct_length;
 		for(j = 0; j < fCodes; j++)
 		{
 			h[filter[i].id][filter[i].accepted_fct[j]] = 1;
