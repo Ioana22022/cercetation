@@ -87,6 +87,21 @@ int searchFunction(int slaveID, int fID)
 	return -1;
 }
 
+int searchNormalAddress(int slaveID, int address)
+{
+	int i = 0;
+	int length = filter[slaveID - 1].accepted_addr_length;
+	
+	for(i = 0; i < length; i++)
+	{
+		if(filter[slaveID -1].accepted_addr[i] == address)
+		{
+			return 1;
+		}
+	}
+	return -1;
+}
+
 #if NORMAL_SEARCH
 int searchNormalID(int slaveID)
 {

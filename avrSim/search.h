@@ -11,6 +11,7 @@ int chr_list(char c, char str_c[]);
 
 int searchID(int);
 int searchFunction(int, int);
+int searchNormalAddress(int, int);
 
 #if NORMAL_SEARCH
 int searchNormalID(int);

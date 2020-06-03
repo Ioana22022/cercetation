@@ -22,7 +22,8 @@ int main()
 
 	char c;
 	char slaveID, fID;
-
+	char addr[2]; // since address values are too large to keep in one byte, we shall store them in 2
+	uint16_t address = 0; // result of the 2 chars from before;
 	
 
 	int rc;
@@ -60,10 +61,13 @@ int main()
 				
 				slaveID = c;
 				rc = searchID(slaveID);
+				
+				// always reset the address;
+				address = 0;
 
 				if(rc < 0)
 				{
-					state = 3;
+					state = 4;
 					USART0_transmit(~c);
 					break;
 				}
@@ -82,7 +86,7 @@ int main()
 
 				if(rc < 0)
 				{	
-					state = 3;	
+					state = 4;	
 					USART0_transmit(~c);		
 					break;
 				}
@@ -94,11 +98,32 @@ int main()
 
 				
 			case 2:
+				// next comes the address, which is two bytes long;
+				addr[0] = c;
 				USART0_transmit(c);
+				state++;
 
 				break;
 
 			case 3:
+				addr[1] = c;
+				address = ((addr[0] << 8) | addr[1]);
+				
+				rc = searchNormalAddress(slaveID, address);
+/*
+				if(rc < 0)
+				{
+					state = 4;
+					USART0_transmit(~c);
+					break;
+				}
+*/
+				// if reached, then address is allowed			
+				USART0_transmit(c);
+
+				break;
+
+			case 4:
 				// flip the byte to break it and break the crc
 
 				// send it broken
@@ -106,6 +131,8 @@ int main()
 
 				// send it broken untill timer expires
 				break;
+
+				
 				
 			default:
 				// cannot reach, wait for timer to expire
