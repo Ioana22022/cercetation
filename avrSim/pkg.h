@@ -1,13 +1,14 @@
 #ifndef PKG_H
 #define PKG_H
+#include <stdint.h>
 
 typedef struct pkg
 {
-	int id;
+	uint8_t id;
 	int accepted_fct_length;
-	int accepted_fct[8];
+	uint8_t accepted_fct[8];
 	int accepted_addr_length;
-	int accepted_addr[8];
+	uint16_t accepted_addr[8];
 
 } pkg;
 

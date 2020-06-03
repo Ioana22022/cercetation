@@ -20,9 +20,9 @@ int main()
 	USART0_init();
 	USART1_init();
 
-	char c;
-	char slaveID, fID;
-	char addr[2]; // since address values are too large to keep in one byte, we shall store them in 2
+	uint8_t c;
+	uint8_t slaveID, fID;
+	uint16_t addr[2]; // since address values are too large to keep in one byte, we shall store them in 2
 	uint16_t address = 0; // result of the 2 chars from before;
 	
 
@@ -108,9 +108,9 @@ int main()
 			case 3:
 				addr[1] = c;
 				address = ((addr[0] << 8) | addr[1]);
-				
-				rc = searchNormalAddress(slaveID, address);
-/*
+
+/*				rc = searchNormalAddress(slaveID, address);
+
 				if(rc < 0)
 				{
 					state = 4;

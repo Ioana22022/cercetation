@@ -58,7 +58,7 @@ int chr_list(char c, char str_c[])
 
 
 // search slave ID function
-int searchID(int slaveID)
+int searchID(uint8_t slaveID)
 {
 #if NORMAL_SEARCH
 	return searchNormalID(slaveID);
@@ -73,7 +73,7 @@ int searchID(int slaveID)
 }
 
 // search function code function
-int searchFunction(int slaveID, int fID)
+int searchFunction(uint8_t slaveID, uint8_t fID)
 {
 
 #if NORMAL_SEARCH
@@ -87,7 +87,7 @@ int searchFunction(int slaveID, int fID)
 	return -1;
 }
 
-int searchNormalAddress(int slaveID, int address)
+int searchNormalAddress(uint8_t slaveID, uint16_t address)
 {
 	int i = 0;
 	int length = filter[slaveID - 1].accepted_addr_length;
@@ -103,7 +103,7 @@ int searchNormalAddress(int slaveID, int address)
 }
 
 #if NORMAL_SEARCH
-int searchNormalID(int slaveID)
+int searchNormalID(uint8_t slaveID)
 {
 	int i;
 
@@ -120,7 +120,7 @@ int searchNormalID(int slaveID)
 	return -1;
 }
 
-int searchNormalFunction(int slaveID, int fID)
+int searchNormalFunction(uint8_t slaveID, uint8_t fID)
 {
 	int i;
 	int fCodes = filter[slaveID - 1].accepted_fct_length;
