@@ -1,6 +1,33 @@
 #include <avr/io.h>
 #include "usart.h"
 
+void USART2_init()
+{
+	// baud 38400
+	UBRR2 = 25;
+
+	// start transmitter and enable RX interrupt
+	UCSR2B = (1 << TXEN2) | (1 << RXEN2);
+
+	// set frame format: 8 data b, 1 stop, no parity
+	UCSR2C = (3 << UCSZ20);
+}
+
+void USART2_transmit(char data)
+{
+	// wait for buffer to get empty
+	while(!(UCSR2A & (1 << UDRE2)));
+	// send data
+	UDR2 = data;
+}
+
+void USART2_print(const char *data)
+{
+	while(*data != '\0')
+	{
+		USART2_transmit(*data++);
+	}
+}
 void USART0_init()
 {
 	// baud 38400

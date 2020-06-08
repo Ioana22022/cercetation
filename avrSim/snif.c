@@ -3,6 +3,7 @@
 #include "usart.h"
 #include "timer1.h"
 #include "search.h"
+#include <stdlib.h>
 
 volatile char state;
 
@@ -19,6 +20,9 @@ int main()
 {
 	USART0_init();
 	USART1_init();
+	
+	USART2_init();
+
 
 	uint8_t c;
 	uint8_t slaveID, fID;
@@ -26,10 +30,10 @@ int main()
 	uint16_t address = 0; // result of the 2 chars from before;
 	
 
-	int rc;
+	char rc;
 
 	DDRB = (1 << PB7);
-
+	
 	// initialize state
 	state = 0;
 
@@ -64,6 +68,9 @@ int main()
 				
 				// always reset the address;
 				address = 0;
+				addr[0] = 0;
+				addr[1] = 0;
+				
 
 				if(rc < 0)
 				{
@@ -73,6 +80,7 @@ int main()
 				}
 
 				// if reached, slaveID found
+				rc = 0;
 				USART0_transmit(slaveID);
 				state++;
 	
@@ -92,6 +100,7 @@ int main()
 				}
 
 				// if reached, slaveid is allowed to perform action
+				rc = 0;
 				USART0_transmit(c);
 				state++;
 				break;
@@ -108,18 +117,22 @@ int main()
 			case 3:
 				addr[1] = c;
 				address = ((addr[0] << 8) | addr[1]);
+				
+				rc = searchNormalAddress(slaveID, address);
 
-/*				rc = searchNormalAddress(slaveID, address);
-
-				if(rc < 0)
+				if(rc == -1)
 				{
 					state = 4;
 					USART0_transmit(~c);
 					break;
 				}
-*/
-				// if reached, then address is allowed			
+				//----------------------------------------
+				USART2_transmit(rc);
+				//---------------------------------------
+
+				// if reached, then address is allowed, mark as passed			
 				USART0_transmit(c);
+				state = 5;
 
 				break;
 
@@ -130,6 +143,12 @@ int main()
 				USART0_transmit(~c);
 
 				// send it broken untill timer expires
+				break;
+
+			case 5:
+				// pass!
+
+				USART0_transmit(c);
 				break;
 
 				

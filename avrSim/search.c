@@ -5,7 +5,7 @@
 #include <stdlib.h> 
 
 int slaves = sizeof(filter)/sizeof(struct pkg);
-
+/*
 int chr_simple(char c, char str_c[])
 {
 	int val = (int) c;
@@ -55,10 +55,10 @@ int chr_list(char c, char str_c[])
 
 	return -1;
 }
-
+*/
 
 // search slave ID function
-int searchID(uint8_t slaveID)
+char searchID(uint8_t slaveID)
 {
 #if NORMAL_SEARCH
 	return searchNormalID(slaveID);
@@ -73,7 +73,7 @@ int searchID(uint8_t slaveID)
 }
 
 // search function code function
-int searchFunction(uint8_t slaveID, uint8_t fID)
+char searchFunction(uint8_t slaveID, uint8_t fID)
 {
 
 #if NORMAL_SEARCH
@@ -86,11 +86,21 @@ int searchFunction(uint8_t slaveID, uint8_t fID)
 	// if reached, means no search algorithm selected, returns -1
 	return -1;
 }
-
-int searchNormalAddress(uint8_t slaveID, uint16_t address)
+//---------------------------------------------------------
+char searchNormalAddress(uint8_t slaveID, uint16_t address)
 {
 	int i = 0;
 	int length = filter[slaveID - 1].accepted_addr_length;
+	//--------------------------------
+	/*uint8_t *paddr;
+	paddr = &address;
+	USART2_transmit(paddr[0]);
+	USART2_transmit(paddr[1]);
+	*/
+	//uint8_t exp = 0;
+	//exp = (filter[slaveID -1].accepted_addr[i] == address);
+	//USART2_transmit(exp);
+	//-------------------------------
 	
 	for(i = 0; i < length; i++)
 	{
@@ -101,9 +111,9 @@ int searchNormalAddress(uint8_t slaveID, uint16_t address)
 	}
 	return -1;
 }
-
+//---------------------------------------------------------
 #if NORMAL_SEARCH
-int searchNormalID(uint8_t slaveID)
+char searchNormalID(uint8_t slaveID)
 {
 	int i;
 
@@ -120,7 +130,7 @@ int searchNormalID(uint8_t slaveID)
 	return -1;
 }
 
-int searchNormalFunction(uint8_t slaveID, uint8_t fID)
+char searchNormalFunction(uint8_t slaveID, uint8_t fID)
 {
 	int i;
 	int fCodes = filter[slaveID - 1].accepted_fct_length;
@@ -138,7 +148,7 @@ int searchNormalFunction(uint8_t slaveID, uint8_t fID)
 #endif
 
 #if HAS_SEARCH
-int searchHasID(int slaveID)
+char searchHasID(int slaveID)
 {
 	if(hID[slaveID] == 1)
 	{
@@ -148,7 +158,7 @@ int searchHasID(int slaveID)
 	return -1;
 }
 
-int searchHasFunction(int slaveID, int fID)
+ searchHasFunction(int slaveID, int fID)
 {
 	// check validity of function
 	if(h[slaveID][fID] == 1)
