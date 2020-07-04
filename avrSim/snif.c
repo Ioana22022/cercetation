@@ -29,6 +29,9 @@ int main()
 	uint16_t addr[2]; // since address values are too large to keep in one byte, we shall store them in 2
 	uint16_t address = 0; // result of the 2 chars from before;
 	
+	uint16_t value[2];
+	uint8_t addr_no[2]; // number of addresses are stored in 2 bytes
+	uint16_t reg_number;
 
 	char rc;
 
@@ -68,8 +71,11 @@ int main()
 				
 				// always reset the address;
 				address = 0;
+				reg_number = 0;
 				addr[0] = 0;
 				addr[1] = 0;
+				addr_no[0] = 0;
+				addr_no[1] = 0;
 				
 
 				if(rc < 0)
@@ -127,8 +133,16 @@ int main()
 					break;
 				}
 				//----------------------------------------
-				USART2_transmit(rc);
+				//USART2_transmit(rc);
 				//---------------------------------------
+
+				if((fID != 0x05) && (fID != 0x06))
+				{
+					//then multiple registers/coils are involved, check the number which is nexrt byte	
+					state = 6;
+					USART0_transmit(c);
+					break;
+				}
 
 				// if reached, then address is allowed, mark as passed			
 				USART0_transmit(c);
@@ -149,6 +163,62 @@ int main()
 				// pass!
 
 				USART0_transmit(c);
+				break;
+
+			case 6:
+				addr_no[0] = c;
+				USART0_transmit(c);
+				state++;
+
+				break;
+
+			case 7:
+				addr_no[1] = c;
+				reg_number = ((addr_no[0] << 8) | addr_no[1]);
+
+				if(reg_number == 1)
+				{
+					// already checked at case 3
+					USART0_transmit(c);
+					state = 5;
+					break;
+
+				}
+				
+				//index 0 had already been checked at state 3
+				//check all the next addresses that the slave might be allowed to access
+				int i;
+				//USART2_transmit(addr_no[0]);
+				//USART2_transmit(addr_no[1]);
+
+				for(i = 1; i < reg_number; i++)
+				{
+
+					rc = searchNormalAddress(slaveID, (address + i));
+				//	USART2_transmit((((address + i) & 0xf0) >> 8));
+				//	USART2_transmit(((address + i) & 0x0f));
+					USART2_transmit(rc);	
+					
+
+					// if one of the allowed addresses is the one we search for, then pass
+					if(rc != -1)
+					{
+						USART0_transmit(c);
+						state = 5;
+						break;
+					}
+					
+				}
+
+				// if reached, all allowed addresses are different from this one, so this address is not allowed 
+				if(i == reg_number)
+				{
+					state = 4;
+					USART0_transmit(~c);
+					break;
+				}
+
+
 				break;
 
 				

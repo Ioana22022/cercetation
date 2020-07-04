@@ -9,6 +9,8 @@ typedef struct pkg
 	uint8_t accepted_fct[8];
 	int accepted_addr_length;
 	uint16_t accepted_addr[8];
+	int accepted_values_length;
+	uint16_t accepted_values[8];
 
 } pkg;
 

@@ -26,7 +26,7 @@ logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
-PORT='/dev/ttyUSB0'
+PORT='/dev/ttyUSB1'
 
 def run_server():
 
@@ -34,10 +34,12 @@ def run_server():
 
     slave_store1 = ModbusSlaveContext(ir=ModbusSequentialDataBlock(40001, [256, 258]), zero_mode=True)
     slave_store2 = ModbusSlaveContext(ir=ModbusSequentialDataBlock(40002, [261, 263]), zero_mode=True)
-    slave_store4 = ModbusSlaveContext(ir=ModbusSequentialDataBlock(40003, [269]), zero_mode=True)
+    slave_store4 = ModbusSlaveContext(ir=ModbusSequentialDataBlock(40004, [269]), zero_mode=True)
+    slave_store3 = ModbusSlaveContext(ir=ModbusSequentialDataBlock(40005, [258, 261]), zero_mode=True)
     slaves = {
        0x01: slave_store1,
        0x02: slave_store2,
+       0x03: slave_store3,
        0x04: slave_store4,
     }	
     context = ModbusServerContext(slaves=slaves, single=False)
