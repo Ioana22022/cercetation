@@ -86,22 +86,14 @@ char searchFunction(uint8_t slaveID, uint8_t fID)
 	// if reached, means no search algorithm selected, returns -1
 	return -1;
 }
+
+#if NORMAL_SEARCH
 //---------------------------------------------------------
 char searchNormalAddress(uint8_t slaveID, uint16_t address)
 {
 	int i = 0;
 	int length = filter[slaveID - 1].accepted_addr_length;
-	//--------------------------------
-	/*uint8_t *paddr;
-	paddr = &address;
-	USART2_transmit(paddr[0]);
-	USART2_transmit(paddr[1]);
-	*/
-	//uint8_t exp = 0;
-	//exp = (filter[slaveID -1].accepted_addr[i] == address);
-	//USART2_transmit(exp);
-	//-------------------------------
-	
+
 	for(i = 0; i < length; i++)
 	{
 		if(filter[slaveID -1].accepted_addr[i] == address)
@@ -112,7 +104,23 @@ char searchNormalAddress(uint8_t slaveID, uint16_t address)
 	return -1;
 }
 //---------------------------------------------------------
-#if NORMAL_SEARCH
+char searchNormalValue(uint8_t slaveID, uint16_t value)
+{
+	int i = 0;
+	int length = filter[slaveID - 1].accepted_values_length;
+
+	for(i = 0; i < length; i++)
+	{
+		if(filter[slaveID - 1].accepted_values[i] == value)
+		{
+			return 1;
+		}
+	}
+
+	return -1;
+
+}
+//---------------------------------------------------------
 char searchNormalID(uint8_t slaveID)
 {
 	int i;

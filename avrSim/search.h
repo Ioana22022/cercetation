@@ -12,9 +12,10 @@ char chr_list(char c, char str_c[]);
 
 char searchID(uint8_t);
 char searchFunction(uint8_t, uint8_t);
-char searchNormalAddress(uint8_t, uint16_t);
 
 #if NORMAL_SEARCH
+char searchNormalAddress(uint8_t, uint16_t);
+char searchNormalValue(uint8_t, uint16_t);
 char searchNormalID(uint8_t);
 char searchNormalFunction(uint8_t, uint8_t);
 

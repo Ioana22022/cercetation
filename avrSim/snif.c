@@ -29,7 +29,8 @@ int main()
 	uint16_t addr[2]; // since address values are too large to keep in one byte, we shall store them in 2
 	uint16_t address = 0; // result of the 2 chars from before;
 	
-	uint16_t value[2];
+	uint8_t value[2];
+	uint16_t val;
 	uint8_t addr_no[2]; // number of addresses are stored in 2 bytes
 	uint16_t reg_number;
 
@@ -76,6 +77,9 @@ int main()
 				addr[1] = 0;
 				addr_no[0] = 0;
 				addr_no[1] = 0;
+				value[0] = 0;
+				value[1] = 0;
+				val = 0;
 				
 
 				if(rc < 0)
@@ -123,8 +127,6 @@ int main()
 			case 3:
 				addr[1] = c;
 				address = ((addr[0] << 8) | addr[1]);
-				USART2_transmit(addr[0]);
-				USART2_transmit(addr[1]);
 				
 				rc = searchNormalAddress(slaveID, address);
 
@@ -137,20 +139,22 @@ int main()
 				//----------------------------------------
 				//USART2_transmit(rc);
 				//---------------------------------------
-
-				if((fID != 0x05) && (fID != 0x06))
+				//if it is a single operation, then next byte to come takes part in the value
+				if((fID == 0x05) || (fID == 0x06))
 				{
-					//then multiple registers/coils are involved, so number must be checked
-					state = 6;
+					// then it's a single operation, so values must be checked
+					USART2_transmit(fID);
+					state = 8;
 					USART0_transmit(c);
 					break;
 				}
 
-				// if reached, then address is allowed, mark as passed			
+				// if reached, then there are multiple registers involved, so we must filter the number of addresses
+				state = 6;
 				USART0_transmit(c);
-				state = 5;
 
 				break;
+
 
 			case 4:
 				// flip the byte to break it and break the crc
@@ -177,8 +181,6 @@ int main()
 			case 7:
 				addr_no[1] = c;
 				reg_number = ((addr_no[0] << 8) | addr_no[1]);
-				USART2_transmit(addr_no[0]);
-				USART2_transmit(addr_no[1]);
 
 				if(reg_number == 1)
 				{
@@ -202,6 +204,14 @@ int main()
 					if(rc != -1)
 					{
 						USART0_transmit(c);
+						// if it's write operation
+						if(fID > 0x04)
+						{
+							// check value
+							state = 8;
+							break;
+						}
+						// if it's read operation, then all is passed
 						state = 5;
 						break;
 					}
@@ -219,6 +229,30 @@ int main()
 
 				break;
 
+			// 2 states, value check
+			case 8:
+				value[0] = c;
+
+				USART0_transmit(c);
+				state++;
+				break;
+
+			case 9:
+				value[1] = c;
+				val = ((value[0] << 8) | value[1]);
+
+				rc = searchNormalValue(slaveID, val);
+
+				if(rc < 0)
+				{	
+					state = 4;	
+					USART0_transmit(~c);		
+					break;
+				}
+				USART0_transmit(c);
+				state = 5;
+				break;
+				
 				
 				
 			default:
