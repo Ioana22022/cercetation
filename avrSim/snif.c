@@ -123,6 +123,8 @@ int main()
 			case 3:
 				addr[1] = c;
 				address = ((addr[0] << 8) | addr[1]);
+				USART2_transmit(addr[0]);
+				USART2_transmit(addr[1]);
 				
 				rc = searchNormalAddress(slaveID, address);
 
@@ -138,7 +140,7 @@ int main()
 
 				if((fID != 0x05) && (fID != 0x06))
 				{
-					//then multiple registers/coils are involved, check the number which is nexrt byte	
+					//then multiple registers/coils are involved, so number must be checked
 					state = 6;
 					USART0_transmit(c);
 					break;
@@ -175,6 +177,8 @@ int main()
 			case 7:
 				addr_no[1] = c;
 				reg_number = ((addr_no[0] << 8) | addr_no[1]);
+				USART2_transmit(addr_no[0]);
+				USART2_transmit(addr_no[1]);
 
 				if(reg_number == 1)
 				{
@@ -188,17 +192,11 @@ int main()
 				//index 0 had already been checked at state 3
 				//check all the next addresses that the slave might be allowed to access
 				int i;
-				//USART2_transmit(addr_no[0]);
-				//USART2_transmit(addr_no[1]);
 
 				for(i = 1; i < reg_number; i++)
 				{
 
 					rc = searchNormalAddress(slaveID, (address + i));
-				//	USART2_transmit((((address + i) & 0xf0) >> 8));
-				//	USART2_transmit(((address + i) & 0x0f));
-					USART2_transmit(rc);	
-					
 
 					// if one of the allowed addresses is the one we search for, then pass
 					if(rc != -1)

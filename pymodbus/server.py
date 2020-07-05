@@ -26,7 +26,7 @@ logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
-PORT='/dev/ttyUSB1'
+PORT='/dev/ttyUSB0'
 
 def run_server():
 
