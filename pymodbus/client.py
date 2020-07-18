@@ -17,18 +17,22 @@ cli.connect()
 #res1 = cli.read_input_registers(40002, count=1, unit=2)
 #res3 = cli.read_input_registers(40005, count=2, unit=3)
 #res2 = cli.read_input_registers(40004, count=1, unit=4)
-rq = cli.write_register(40001, 261, unit=1)
-rr = cli.read_holding_registers(40001, count=1, unit=1)
+rq_single = cli.write_registers(40001, 261, unit=1)
+rr_single = cli.read_holding_registers(40001, count=1, unit=1)
+print(rr_single.registers)
 
-rq_fail = cli.write_register(40001, 255, unit=1)
-rr_fail = cli.read_holding_registers(40001, count=1, unit=1)
+rq = cli.write_registers(40001, [258]*3, unit=1)
+rr = cli.read_holding_registers(40001, count=3, unit=1)
+print(rr.registers)
+
+#rq_2 = cli.write_register(40001, 256, unit=1)
+#rr_2 = cli.read_holding_registers(40001, count=1, unit=1)
 
 
 cli.close()
 
+assert(rr.registers == [258]*3)
 #print(res1.registers)
-print(rr.registers)
-print(rr_fail.registers)
 #print(res)
 #print(res.registers)
 #print(res3.registers)

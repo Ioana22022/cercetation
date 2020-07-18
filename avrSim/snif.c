@@ -143,7 +143,6 @@ int main()
 				if((fID == 0x05) || (fID == 0x06))
 				{
 					// then it's a single operation, so values must be checked
-					USART2_transmit(fID);
 					state = 8;
 					USART0_transmit(c);
 					break;
@@ -186,7 +185,8 @@ int main()
 				{
 					// already checked at case 3
 					USART0_transmit(c);
-					state = 5;
+					// next comes number of bytes, then check value
+					state = 10;
 					break;
 
 				}
@@ -199,16 +199,23 @@ int main()
 				{
 
 					rc = searchNormalAddress(slaveID, (address + i));
+					USART2_transmit(rc);
 
 					// if one of the allowed addresses is the one we search for, then pass
-					if(rc != -1)
+					if(rc > 0)
 					{
 						USART0_transmit(c);
 						// if it's write operation
-						if(fID > 0x04)
+						if(fID > 0x04 && fID < 0x0F)
 						{
 							// check value
 							state = 8;
+							break;
+						}
+						else if(fID >= 0x0F)
+						{
+							// next follows number of bytes
+							state = 10;
 							break;
 						}
 						// if it's read operation, then all is passed
@@ -249,9 +256,39 @@ int main()
 					USART0_transmit(~c);		
 					break;
 				}
+
+				if(reg_number > 1)
+				{
+					USART0_transmit(c);
+					reg_number--;
+					state = 8;
+					break;
+				}
+
 				USART0_transmit(c);
 				state = 5;
 				break;
+
+			// number of data bytes to follow, useless information
+			case 10:
+				USART0_transmit(c);
+
+				// check value to come
+				state = 8;
+				break;
+
+			/*case 11:	
+				if(reg_number > 0)
+				{
+					//check value
+					state = 8;
+					reg_number--;
+					break;
+				}
+
+				break;
+			*/
+
 				
 				
 				
