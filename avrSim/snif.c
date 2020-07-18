@@ -201,37 +201,42 @@ int main()
 					rc = searchNormalAddress(slaveID, (address + i));
 					USART2_transmit(rc);
 
-					// if one of the allowed addresses is the one we search for, then pass
-					if(rc > 0)
+					// if one of the checked addresses is not allowed, fail CRC, go to last state
+					if(rc < 0)
 					{
-						USART0_transmit(c);
-						// if it's write operation
-						if(fID > 0x04 && fID < 0x0F)
-						{
-							// check value
-							state = 8;
-							break;
-						}
-						else if(fID >= 0x0F)
-						{
-							// next follows number of bytes
-							state = 10;
-							break;
-						}
-						// if it's read operation, then all is passed
-						state = 5;
+						USART0_transmit(~c);
+						state = 4;
 						break;
 					}
 					
 				}
 
 				// if reached, all allowed addresses are different from this one, so this address is not allowed 
-				if(i == reg_number)
+				/*if(i == reg_number)
 				{
 					state = 4;
 					USART0_transmit(~c);
 					break;
+				}*/
+
+				USART0_transmit(c);
+				// if it's write operation
+				if(fID > 0x04 && fID < 0x0F)
+				{
+					// check value
+					state = 8;
+					break;
 				}
+
+				else if(fID >= 0x0F)
+				{
+					// next follows number of bytes
+					state = 10;
+					break;
+				}
+				// if it's read operation, then all is passed
+				state = 5;
+				break;
 
 
 				break;
@@ -277,20 +282,6 @@ int main()
 				state = 8;
 				break;
 
-			/*case 11:	
-				if(reg_number > 0)
-				{
-					//check value
-					state = 8;
-					reg_number--;
-					break;
-				}
-
-				break;
-			*/
-
-				
-				
 				
 			default:
 				// cannot reach, wait for timer to expire
