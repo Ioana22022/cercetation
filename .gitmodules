@@ -1,0 +1,3 @@
+[submodule "stm32/libopencm3"]
+	path = stm32/libopencm3
+	url = https://github.com/libopencm3/libopencm3.git
