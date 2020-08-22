@@ -5,11 +5,23 @@
 #include "search.h"
 #include <stdlib.h>
 
+#define INIT 0
+#define CHECK_FID 1
+#define CHECK_ADDR_1 2
+#define CHECK_ADDR_2 3
+#define DENIED 4
+#define PASS 5
+#define DEVICES_NUMBER_1 6
+#define DEVICES_NUMBER_2 7
+#define CHECK_VALUE_1 8
+#define CHECK_VALUE_2 9
+#define DATA_BYTES_NUMBER 10
+
 volatile char state;
 
 ISR(TIMER1_COMPA_vect)
 {
-	state = 0;
+	state = INIT;
 	
 	timer1_stop();
 
@@ -39,7 +51,7 @@ int main()
 	DDRB = (1 << PB7);
 	
 	// initialize state
-	state = 0;
+	state = INIT;
 
 	timer1_init();
 
@@ -65,7 +77,7 @@ int main()
 		switch(state)
 		{
 			// init state
-			case 0:
+			case INIT:
 				
 				slaveID = c;
 				rc = searchID(slaveID);
@@ -84,7 +96,7 @@ int main()
 
 				if(rc < 0)
 				{
-					state = 4;
+					state = DENIED;
 					USART0_transmit(~c);
 					break;
 				}
@@ -92,19 +104,19 @@ int main()
 				// if reached, slaveID found
 				rc = 0;
 				USART0_transmit(slaveID);
-				state++;
+				state = CHECK_FID;
 	
 				break;
 
 
-			case 1:
+			case CHECK_FID:
 				fID = c;
 		
 				rc = searchFunction(slaveID, fID);
 
 				if(rc < 0)
 				{	
-					state = 4;	
+					state = DENIED;	
 					USART0_transmit(~c);		
 					break;
 				}
@@ -112,19 +124,19 @@ int main()
 				// if reached, slaveid is allowed to perform action
 				rc = 0;
 				USART0_transmit(c);
-				state++;
+				state = CHECK_ADDR_1;
 				break;
 
 				
-			case 2:
+			case CHECK_ADDR_1:
 				// next comes the address, which is two bytes long;
 				addr[0] = c;
 				USART0_transmit(c);
-				state++;
+				state = CHECK_ADDR_2;
 
 				break;
 
-			case 3:
+			case CHECK_ADDR_2:
 				addr[1] = c;
 				address = ((addr[0] << 8) | addr[1]);
 				
@@ -132,7 +144,7 @@ int main()
 
 				if(rc == -1)
 				{
-					state = 4;
+					state = DENIED;
 					USART0_transmit(~c);
 					break;
 				}
@@ -143,19 +155,19 @@ int main()
 				if((fID == 0x05) || (fID == 0x06))
 				{
 					// then it's a single operation, so values must be checked
-					state = 8;
+					state = CHECK_VALUE_1;
 					USART0_transmit(c);
 					break;
 				}
 
 				// if reached, then there are multiple registers involved, so we must filter the number of addresses
-				state = 6;
+				state = DEVICES_NUMBER_1;
 				USART0_transmit(c);
 
 				break;
 
 
-			case 4:
+			case DENIED:
 				// flip the byte to break it and break the crc
 
 				// send it broken
@@ -164,20 +176,20 @@ int main()
 				// send it broken untill timer expires
 				break;
 
-			case 5:
+			case PASS:
 				// pass!
 
 				USART0_transmit(c);
 				break;
 
-			case 6:
+			case DEVICES_NUMBER_1:
 				addr_no[0] = c;
 				USART0_transmit(c);
-				state++;
+				state = DEVICES_NUMBER_2;
 
 				break;
 
-			case 7:
+			case DEVICES_NUMBER_2:
 				addr_no[1] = c;
 				reg_number = ((addr_no[0] << 8) | addr_no[1]);
 
@@ -186,7 +198,7 @@ int main()
 					// already checked at case 3
 					USART0_transmit(c);
 					// next comes number of bytes, then check value
-					state = 10;
+					state = DATA_BYTES_NUMBER;
 					break;
 
 				}
@@ -205,7 +217,7 @@ int main()
 					if(rc < 0)
 					{
 						USART0_transmit(~c);
-						state = 4;
+						state = DENIED;
 						break;
 					}
 					
@@ -224,32 +236,30 @@ int main()
 				if(fID > 0x04 && fID < 0x0F)
 				{
 					// check value
-					state = 8;
+					state = CHECK_VALUE_1;
 					break;
 				}
 
 				else if(fID >= 0x0F)
 				{
 					// next follows number of bytes
-					state = 10;
+					state = DATA_BYTES_NUMBER;
 					break;
 				}
 				// if it's read operation, then all is passed
-				state = 5;
-				break;
-
+				state = PASS;
 
 				break;
 
 			// 2 states, value check
-			case 8:
+			case CHECK_VALUE_1:
 				value[0] = c;
 
 				USART0_transmit(c);
-				state++;
+				state = CHECK_VALUE_2;
 				break;
 
-			case 9:
+			case CHECK_VALUE_2:
 				value[1] = c;
 				val = ((value[0] << 8) | value[1]);
 
@@ -257,7 +267,7 @@ int main()
 
 				if(rc < 0)
 				{	
-					state = 4;	
+					state = DENIED;	
 					USART0_transmit(~c);		
 					break;
 				}
@@ -266,20 +276,20 @@ int main()
 				{
 					USART0_transmit(c);
 					reg_number--;
-					state = 8;
+					state = CHECK_VALUE_1;
 					break;
 				}
 
 				USART0_transmit(c);
-				state = 5;
+				state = PASS;
 				break;
 
 			// number of data bytes to follow, useless information
-			case 10:
+			case DATA_BYTES_NUMBER:
 				USART0_transmit(c);
 
 				// check value to come
-				state = 8;
+				state = CHECK_VALUE_1;
 				break;
 
 				
