@@ -26,7 +26,13 @@ OPENCM3_DIR = libopencm3
 
 all: main.elf
 
-$(OPENCM3_DIR)/lib/opencm3_stm32f4.a: Makefile
+flash:
+	openocd -f interface/stlink-v2.cfg -f target/stm32f4x.cfg -c "program ./main.elf verify reset exit"
+
+all: main.elf
+
+
+$(OPENCM3_DIR)/lib/libopencm3_stm32f4.a: Makefile
 	$(MAKE) PREFIX="$(PREFIX)" -C $(OPENCM3_DIR) \
 	       CFLAGS="$(CFLAGS)" ASFLAGS="$(ASFLAGS)" lib/stm32/f4	
 
@@ -35,5 +41,5 @@ $(OPENCM3_DIR)/lib/opencm3_stm32f4.a: Makefile
 
 _OBJECTS=$(patsubst %.c,%.o,$(OBJECTS))
 
-main.elf: $(_OBJECTS)
-	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS) 
+main.elf: $(_OBJECTS) | $(OPENCM3_DIR)/lib/libopencm3_stm32f4.a
+	$(CC) $(LDFLAGS) $^ $(OPENCM3_DIR)/lib/libopencm3_stm32f4.a -o $@  

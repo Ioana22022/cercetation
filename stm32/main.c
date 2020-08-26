@@ -20,51 +20,78 @@
 
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
+#include <libopencm3/stm32/usart.h>
+
+static void clock_setup(void)
+{
+	/* Enable GPIOC clock for LED & USARTs. */
+  // USART6 is also on port C
+	rcc_periph_clock_enable(RCC_GPIOC);
+
+  //TBD: USART6
+	//rcc_periph_clock_enable(RCC_GPIOA);
+
+	/* Enable clocks for USART2. */
+	rcc_periph_clock_enable(RCC_USART6);
+}
+
+static void usart_setup(void)
+{
+	/* Setup USART2 parameters. */
+	usart_set_baudrate(USART6, 115200);
+	usart_set_databits(USART6, 8);
+	usart_set_stopbits(USART6, USART_STOPBITS_1);
+	usart_set_mode(USART6, USART_MODE_TX_RX);
+	usart_set_parity(USART6, USART_PARITY_NONE);
+	usart_set_flow_control(USART6, USART_FLOWCONTROL_NONE);
+
+	/* Finally enable the USART. */
+	usart_enable(USART6);
+}
 
 static void gpio_setup(void)
 {
-	/* Enable GPIOD clock. */
-	/* Manually: */
-	// RCC_AHB1ENR |= RCC_AHB1ENR_IOPDEN;
-	/* Using API functions: */
-	rcc_periph_clock_enable(RCC_GPIOC);
-
-	/* Set GPIO12 (in GPIO port D) to 'output push-pull'. */
-	/* Manually: */
-	// GPIOD_CRH = (GPIO_CNF_OUTPUT_PUSHPULL << (((8 - 8) * 4) + 2));
-	// GPIOD_CRH |= (GPIO_MODE_OUTPUT_2_MHZ << ((8 - 8) * 4));
-	/* Using API functions: */
+	/* Setup GPIO pin GPIO13 on GPIO port C for LED. */
 	gpio_mode_setup(GPIOC, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO13);
+
+	/* Setup GPIO pins for USART6 transmit. */
+	gpio_mode_setup(GPIOC, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO6);
+
+	/* Setup GPIO pins for USART6 receive. */
+	gpio_mode_setup(GPIOC, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO7);
+
+	/* Setup USART6 TX pin as alternate function. */
+	gpio_set_af(GPIOC, GPIO_AF8, GPIO6);
+
+	/* Setup USART6 RX pin as alternate function. */
+	gpio_set_af(GPIOC, GPIO_AF8, GPIO7);
 }
 
 int main(void)
 {
-	int i;
+	int i, j = 0, c = 0;
 
+	clock_setup();
 	gpio_setup();
+	usart_setup();
 
-	/* Blink the LED (PC8) on the board. */
+	/* Blink the LED (PD12) on the board with every transmitted byte. */
+  int data = 'P';
 	while (1) {
-		/* Manually: */
-		// GPIOD_BSRR = GPIO12;		/* LED off */
-		// for (i = 0; i < 1000000; i++)	/* Wait a bit. */
-		//	__asm__("nop");
-		// GPIOD_BRR = GPIO12;		/* LED on */
-		// for (i = 0; i < 1000000; i++)	/* Wait a bit. */
-		//	__asm__("nop");
-
-		/* Using API functions gpio_set()/gpio_clear(): */
-		// gpio_set(GPIOD, GPIO12);	/* LED off */
-		// for (i = 0; i < 1000000; i++)	/* Wait a bit. */
-		//	__asm__("nop");
-		// gpio_clear(GPIOD, GPIO12);	/* LED on */
-		// for (i = 0; i < 1000000; i++)	/* Wait a bit. */
-		//	__asm__("nop");
-
-		/* Using API function gpio_toggle(): */
 		gpio_toggle(GPIOC, GPIO13);	/* LED on/off */
-		for (i = 0; i < 1000000; i++) {	/* Wait a bit. */
-			__asm__("nop");
+		usart_send_blocking(USART6, c + '0'); /* USART6: Send byte. */
+    data = usart_recv_blocking(USART6);
+		usart_send_blocking(USART6, data); /* USART6: Send byte. */
+
+
+		c = (c == 9) ? 0 : c + 1;	/* Increment c. */
+		if ((j++ % 80) == 0) {		/* Newline after line full. */
+			usart_send_blocking(USART6, '\r');
+			usart_send_blocking(USART6, '\n');
+		}
+    
+		for (i = 0; i < 3000000; i++) {	/* Wait a bit. */
+			__asm__("NOP");
 		}
 	}
 
