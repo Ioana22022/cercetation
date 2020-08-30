@@ -44,7 +44,7 @@ static void clock_setup(void)
 static void usart_setup(void)
 {
 	/* Setup USART6 parameters. */
-	usart_set_baudrate(USART6, 115200);
+	usart_set_baudrate(USART6, 38400);
 	usart_set_databits(USART6, 8);
 	usart_set_stopbits(USART6, USART_STOPBITS_1);
 	usart_set_mode(USART6, USART_MODE_TX_RX);
@@ -52,7 +52,7 @@ static void usart_setup(void)
 	usart_set_flow_control(USART6, USART_FLOWCONTROL_NONE);
 
 	/* Setup USART3 parameters. */
-	usart_set_baudrate(USART3, 115200);
+	usart_set_baudrate(USART3, 38400);
 	usart_set_databits(USART3, 8);
 	usart_set_stopbits(USART3, USART_STOPBITS_1);
 	usart_set_mode(USART3, USART_MODE_TX);
