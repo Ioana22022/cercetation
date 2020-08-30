@@ -21,6 +21,9 @@
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/usart.h>
+#include <libopencm3/stm32/timer.h>
+#include <libopencm3/cm3/nvic.h>
+
 
 static void clock_setup(void)
 {
@@ -39,7 +42,72 @@ static void clock_setup(void)
 
 	/* Enable clocks for USART3. */
 	rcc_periph_clock_enable(RCC_USART3);
+
+  rcc_clock_setup_pll(&rcc_hse_12mhz_3v3[RCC_CLOCK_3V3_168MHZ]);
 }
+
+static void timer_setup()
+{
+	/* Enable TIM2 clock. */
+	rcc_periph_clock_enable(RCC_TIM2);
+
+	/* Enable TIM2 interrupt. */
+	nvic_enable_irq(NVIC_TIM2_IRQ);
+
+	/* Reset TIM2 peripheral to defaults. */
+	rcc_periph_reset_pulse(RST_TIM2);
+
+	/* Timer global mode:
+	 * - No divider
+	 * - Alignment edge
+	 * - Direction up
+	 * (These are actually default values after reset above, so this call
+	 * is strictly unnecessary, but demos the api for alternative settings)
+	 */
+	timer_set_mode(TIM2, TIM_CR1_CKD_CK_INT,
+		TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
+
+	/*
+	 * Please take note that the clock source for STM32 timers
+	 * might not be the raw APB1/APB2 clocks.  In various conditions they
+	 * are doubled.  See the Reference Manual for full details!
+	 * In our case, TIM2 on APB1 is running at double frequency, so this
+	 * sets the prescaler to have the timer run at 5kHz
+	 */
+	//timer_set_prescaler(TIM2, ((rcc_apb1_frequency * 2) / 50000));
+	timer_set_prescaler(TIM2, ((rcc_apb1_frequency * 2) / 62400000)); // -----> 320 Hz, counting to 65535
+	//timer_set_prescaler(TIM2, 16);
+
+	/* Disable preload. */
+	timer_disable_preload(TIM2);
+	timer_continuous_mode(TIM2);
+
+	/* count full range, as we'll update compare value continuously */
+	//timer_set_period(TIM2, 65535);
+	timer_set_period(TIM2, 21846); // ------> 961
+	//timer_set_period(TIM2, 781);
+
+	/* Set the initual output compare value for OC1. */
+//	timer_set_oc_value(TIM2, TIM_OC1, 32000);
+
+	/* Counter enable. */
+	timer_enable_counter(TIM2);
+
+	/* Enable Channel 1 compare interrupt to recalculate compare values */
+	timer_enable_irq(TIM2, TIM_DIER_CC1IE);
+}
+
+void tim2_isr(void)
+{
+  if(timer_get_flag(TIM2, TIM_SR_CC1IF))
+  {
+    timer_clear_flag(TIM2, TIM_SR_CC1IF);
+  }
+
+	gpio_toggle(GPIOC, GPIO13);	/* LED on/off */
+}
+
+
 
 static void usart_setup(void)
 {
@@ -96,10 +164,10 @@ int main(void)
 	clock_setup();
 	gpio_setup();
 	usart_setup();
+  timer_setup();
 
 	/* Blink the LED (PD12) on the board with every transmitted byte. */
 	while (1) {
-		gpio_toggle(GPIOC, GPIO13);	/* LED on/off */
       //data = usart_recv_blocking(USART6);
 		  usart_send_blocking(USART6, c + '0'); /* USART6: Send byte. */
 		  usart_send_blocking(USART3, c + '0'); /* USART6: Send byte. */
