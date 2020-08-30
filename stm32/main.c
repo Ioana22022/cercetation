@@ -28,16 +28,22 @@ static void clock_setup(void)
   // USART6 is also on port C
 	rcc_periph_clock_enable(RCC_GPIOC);
 
+  // USART3 Transmit
+	rcc_periph_clock_enable(RCC_GPIOB);
+
   //TBD: USART6
 	//rcc_periph_clock_enable(RCC_GPIOA);
 
-	/* Enable clocks for USART2. */
+	/* Enable clocks for USART6. */
 	rcc_periph_clock_enable(RCC_USART6);
+
+	/* Enable clocks for USART3. */
+	rcc_periph_clock_enable(RCC_USART3);
 }
 
 static void usart_setup(void)
 {
-	/* Setup USART2 parameters. */
+	/* Setup USART6 parameters. */
 	usart_set_baudrate(USART6, 115200);
 	usart_set_databits(USART6, 8);
 	usart_set_stopbits(USART6, USART_STOPBITS_1);
@@ -45,8 +51,18 @@ static void usart_setup(void)
 	usart_set_parity(USART6, USART_PARITY_NONE);
 	usart_set_flow_control(USART6, USART_FLOWCONTROL_NONE);
 
+	/* Setup USART3 parameters. */
+	usart_set_baudrate(USART3, 115200);
+	usart_set_databits(USART3, 8);
+	usart_set_stopbits(USART3, USART_STOPBITS_1);
+	usart_set_mode(USART3, USART_MODE_TX);
+	usart_set_parity(USART3, USART_PARITY_NONE);
+	usart_set_flow_control(USART3, USART_FLOWCONTROL_NONE);
+
+
 	/* Finally enable the USART. */
 	usart_enable(USART6);
+  usart_enable(USART3);
 }
 
 static void gpio_setup(void)
@@ -65,23 +81,28 @@ static void gpio_setup(void)
 
 	/* Setup USART6 RX pin as alternate function. */
 	gpio_set_af(GPIOC, GPIO_AF8, GPIO7);
+
+	/* Setup GPIO pins for USART3 transmit. */
+	gpio_mode_setup(GPIOB, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO10);
+
+	/* Setup USART3 TX pin as alternate function. */
+	gpio_set_af(GPIOB, GPIO_AF7, GPIO10);
 }
 
 int main(void)
 {
-	int i, j = 0, c = 0;
+	int i, j = 0, c = 0, data = 0;
 
 	clock_setup();
 	gpio_setup();
 	usart_setup();
 
 	/* Blink the LED (PD12) on the board with every transmitted byte. */
-  int data = 'P';
 	while (1) {
 		gpio_toggle(GPIOC, GPIO13);	/* LED on/off */
-		usart_send_blocking(USART6, c + '0'); /* USART6: Send byte. */
-    data = usart_recv_blocking(USART6);
-		usart_send_blocking(USART6, data); /* USART6: Send byte. */
+      //data = usart_recv_blocking(USART6);
+		  usart_send_blocking(USART6, c + '0'); /* USART6: Send byte. */
+		  usart_send_blocking(USART3, c + '0'); /* USART6: Send byte. */
 
 
 		c = (c == 9) ? 0 : c + 1;	/* Increment c. */
