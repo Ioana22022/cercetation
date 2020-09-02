@@ -1,4 +1,4 @@
-OBJECTS=main.c
+OBJECTS=main.c search.c filter.c has.c
 
 FP_FLAGS ?= -mfloat-abi=hard -mfpu=fpv4-sp-d16
 
@@ -29,8 +29,8 @@ all: main.elf
 flash:
 	openocd -f interface/stlink-v2.cfg -f target/stm32f4x.cfg -c "program ./main.elf verify reset exit"
 
-all: main.elf
-
+clean: 
+	rm main.elf *.o
 
 $(OPENCM3_DIR)/lib/libopencm3_stm32f4.a: Makefile
 	$(MAKE) PREFIX="$(PREFIX)" -C $(OPENCM3_DIR) \
