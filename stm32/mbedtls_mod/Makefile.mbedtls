@@ -1,0 +1,19 @@
+# Makefile for the mbedtls library
+
+MBEDTLS_PATH = mbedtls/
+
+MBEDTLS_CFLAGS = $(CFLAGS_COMMON) \
+		 -I"../../" -DMBEDTLS_CONFIG_FILE='<mbedtls_mod/mbedtls-config.h>'
+
+MBEDTLS_LIB = $(MBEDTLS_PATH)/library/libmbedcrypto.a
+
+
+mbedtls: $(MBEDTLS_LIB)
+$(MBEDTLS_LIB): Makefile mbedtls_mod/mbedtls-config.h
+	make -C "$(MBEDTLS_PATH)/library" clean
+	MAKEFLAGS= make V=$(V) -C "$(MBEDTLS_PATH)/library" \
+			   CC=$(CC) AR=$(AR) \
+			   CFLAGS="$(MBEDTLS_CFLAGS)" \
+			   static
+
+ 
