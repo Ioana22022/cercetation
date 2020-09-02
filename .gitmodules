@@ -1,3 +1,8 @@
 [submodule "stm32/libopencm3"]
 	path = stm32/libopencm3
 	url = https://github.com/libopencm3/libopencm3.git
+[submodule "stm32/mbedtls"]
+	path = stm32/mbedtls
+	branch = mbedtls-2.24.0
+	url = https://github.com/ARMmbed/mbedtls
+
