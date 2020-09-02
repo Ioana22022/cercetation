@@ -104,8 +104,8 @@ int main(void)
 
 	res = mbedtls_poly1305_starts(&mac_state, key);
 	if (res != 0) {
-		usart_send_blocking(USART3, 'F');
-		usart_send_blocking(USART3, -res);
+		usart_send_blocking(USART6, 'F');
+		usart_send_blocking(USART6, -res);
 		return;
 	}
 
@@ -114,15 +114,19 @@ int main(void)
 	while (1) {
 		hash_byte ++;
 		gpio_clear(ANALYZER1_PORT, ANALYZER1_BIT);
+		for (i=0; i<15; i++) {
+			mbedtls_poly1305_update(&mac_state, &hash_byte, 1);
+			hash_byte++;
+		}
 		/* Compute MAC. */
 		res = mbedtls_poly1305_update(&mac_state, &hash_byte, 1);
 		gpio_set(ANALYZER1_PORT, ANALYZER1_BIT);
 		if (res != 0) {
-			usart_send_blocking(USART3, 'G');
-			usart_send_blocking(USART3, -res);
+			usart_send_blocking(USART6, 'G');
+			usart_send_blocking(USART6, -res);
 			return;
 		}
-		usart_send_blocking(USART3, 'Y');
+		usart_send_blocking(USART6, 'Y');
 
 		for (i = 0; i < 3000000; i++) {	/* Wait a bit. */
 			__asm__("NOP");
