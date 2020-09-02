@@ -36,7 +36,7 @@ clean:
 
 include mbedtls_mod/Makefile.mbedtls
 
-flash:
+flash: $(APP).elf
 	openocd $(OPENOCD_ARGS) -c "program ./$(APP).elf verify reset exit"
 
 gdb:
