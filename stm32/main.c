@@ -23,6 +23,10 @@
 #include <libopencm3/stm32/usart.h>
 #include <libopencm3/stm32/timer.h>
 #include <libopencm3/cm3/nvic.h>
+
+#include <mbedtls/poly1305.h>
+#include "mbedtls_mod/stm32_rng.h"
+
 #include "search.h"
 #include "filter.h"
 
@@ -190,7 +194,7 @@ char USART6_receive()
 
 void USART3_transmit(char data)
 {
-  usart_send_blocking(USART6, data);
+  usart_send_blocking(USART3, data);
 }
 
 int main(void)
@@ -213,8 +217,27 @@ int main(void)
 	usart_setup();
   timer_setup();
 
+	STM32RNG_Init();
+
+	/** Initialize Poly1305 state. */
+	uint8_t key[32];
+	int i;
+	for (i=0; i<32; i++) {
+		key[i] = (13 * i * i + 67 * i + 2);
+	}
+	int res;
+	mbedtls_poly1305_context mac_state;
+	mbedtls_poly1305_init(&mac_state);
+
+	res = mbedtls_poly1305_starts(&mac_state, key);
+	if (res != 0) {
+		while (1) {};
+	}
+
 	while (1) {
     c = USART6_receive();
+
+		res = mbedtls_poly1305_update(&mac_state, &c, 1);
 
     tim2_stop();
 
@@ -240,7 +263,6 @@ int main(void)
 				value[0] = 0;
 				value[1] = 0;
 				val = 0;
-
 
 				if(rc < 0)
 				{

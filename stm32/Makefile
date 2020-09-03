@@ -1,3 +1,4 @@
+APP=main
 OBJECTS=$(APP).c mbedtls_mod/stm32_rng.c search.c filter.c has.c
 
 FP_FLAGS ?= -mfloat-abi=hard -mfpu=fpv4-sp-d16
@@ -36,7 +37,7 @@ clean:
 
 include mbedtls_mod/Makefile.mbedtls
 
-flash: $(APP).elf
+flash:
 	openocd $(OPENOCD_ARGS) -c "program ./$(APP).elf verify reset exit"
 
 gdb:

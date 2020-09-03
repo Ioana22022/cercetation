@@ -86,6 +86,7 @@ static void gpio_setup(void)
 int main(void)
 {
 	int i, j = 0, c = 0, data = 0;
+	// se face diffie hellman autentificat cu curbe eliptice (ECDHE) e.g. nist
 	uint8_t key[32];
 	for (i=0; i<32; i++) {
 		key[i] = (13 * i * i + 67 * i + 2);
@@ -102,6 +103,8 @@ int main(void)
 	mbedtls_poly1305_context mac_state;
 	mbedtls_poly1305_init(&mac_state);
 
+	// KEY[32] formata din 16 bytes nonce XOR 32 bytes cheie
+	// nonce e inclus in mesajul de modbus, cat mai la inceput
 	res = mbedtls_poly1305_starts(&mac_state, key);
 	if (res != 0) {
 		usart_send_blocking(USART6, 'F');
